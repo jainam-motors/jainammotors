@@ -1513,7 +1513,7 @@ export default function App() {
             <div className="rounded overflow-hidden bg-white min-h-[280px]">
               <iframe
                 title="map"
-                src="https://www.google.com/maps?q=NH%208%2C%20Opposite%20MS%20Complex%2C%20Nearby%20Tata%20Motors%20Cars%20Showroom%2C%20Gamdi%2C%20Anand%2C%20Gujarat%20388001&output=embed"
+                src="https://www.google.com/maps?q=22.5620972,72.9849277&z=17&output=embed"
                 className="w-full h-full min-h-[280px]"
               ></iframe>
             </div>
