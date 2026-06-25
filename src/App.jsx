@@ -1,7 +1,35 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const heroRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollYProgress: pageScrollProgress } = useScroll();
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const heroImageY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const heroContentY = useTransform(scrollYProgress, [0, 1], ["0%", "-8%"]);
+  const galleryGlowY = useTransform(pageScrollProgress, [0, 1], ["0%", "-8%"]);
+  const contactGlowY = useTransform(pageScrollProgress, [0, 1], ["0%", "10%"]);
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 24 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.7, ease: "easeOut" },
+    },
+  };
+  const staggerVariants = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
 
   return (
     <>
@@ -164,14 +192,26 @@ export default function App() {
             </nav>
           ) : null}
         </header>
-        <section className="relative overflow-hidden">
-          <div
+        <motion.div
+          className="fixed left-0 top-0 z-50 h-1 origin-left bg-primary/80"
+          style={shouldReduceMotion ? { width: "100%" } : { scaleX: pageScrollProgress }}
+        />
+        <section ref={heroRef} className="hero-section relative overflow-hidden">
+          <motion.div
             className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/assets/hero.jpg')" }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-white/20"></div>
-          <div className="relative mx-auto max-w-7xl px-4 py-16 md:py-24 grid md:grid-cols-2 gap-8 items-center">
-            <div>
+            style={
+              shouldReduceMotion ? { backgroundImage: "url('/assets/hero.jpg')" } : { backgroundImage: "url('/assets/hero.jpg')", y: heroImageY }
+            }
+          ></motion.div>
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/70 to-white/20"
+            style={shouldReduceMotion ? undefined : { y: heroImageY }}
+          ></motion.div>
+          <motion.div
+            className="hero-content relative mx-auto max-w-7xl px-4 py-16 md:py-24 grid md:grid-cols-2 gap-8 items-center"
+            style={shouldReduceMotion ? undefined : { y: heroContentY }}
+          >
+            <div className="hero-copy">
               <p className="text-lg md:text-xl font-semibold mb-3">
                 Your Trusted Partner for
               </p>
@@ -185,7 +225,7 @@ export default function App() {
               <div className="mt-6 flex flex-wrap gap-3">
                 <a
                   href="#vehicles"
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow hover:opacity-90"
+                  className="lift-button inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow hover:opacity-90"
                 >
                   VIEW VEHICLES{" "}
                   <svg
@@ -207,7 +247,7 @@ export default function App() {
                 </a>
                 <a
                   href="#contact"
-                  className="inline-flex items-center gap-2 rounded-md border-2 border-foreground px-5 py-3 text-sm font-bold hover:bg-foreground hover:text-background transition-colors"
+                  className="lift-button inline-flex items-center gap-2 rounded-md border-2 border-foreground px-5 py-3 text-sm font-bold hover:bg-foreground hover:text-background transition-colors"
                 >
                   CONTACT US{" "}
                   <svg
@@ -230,30 +270,54 @@ export default function App() {
               </div>
             </div>
             <div className="hidden md:block"></div>
-          </div>
+          </motion.div>
         </section>
-        <section id="about" className="py-14 md:py-20">
-          <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-10 items-center">
-            <img
+        <section id="about" className="about-section py-14 md:py-20">
+          <motion.div
+            className="mx-auto max-w-7xl px-4 grid md:grid-cols-2 gap-10 items-center"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
+            whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+          >
+            <motion.img
               src="/assets/JM7.jpg"
               alt="Jainam Motors showroom"
               className="rounded-lg w-full h-auto object-cover shadow"
+              initial={shouldReduceMotion ? false : { opacity: 0, x: 20 }}
+              whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.75, ease: "easeOut", delay: 0.05 }}
             />
-            <div>
-              <h2 className="text-2xl md:text-3xl font-black mb-4">
+            <motion.div
+              initial={shouldReduceMotion ? false : { opacity: 0, x: -20 }}
+              whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.75, ease: "easeOut", delay: 0.1 }}
+            >
+              <h2 className="section-heading text-2xl md:text-3xl font-black mb-4">
                 ABOUT <span className="text-primary">JAINAM MOTORS</span>
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
                 Jainam Motors is a trusted name in the three-wheeler industry.
-                We are authorized dealers of ATUL, offering a wide range
+                We are authorized dealers of ATUL Auto Ltd., offering a wide range
                 of passenger and cargo vehicles.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-8">
                 Our commitment is to provide reliable vehicles, competitive
                 prices, finance assistance and excellent after-sales service.
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                <div className="text-center">
+              <motion.div
+                className="grid grid-cols-2 sm:grid-cols-4 gap-6 about-stats"
+                initial={shouldReduceMotion ? false : "hidden"}
+                whileInView={shouldReduceMotion ? undefined : "show"}
+                viewport={{ once: true, amount: 0.3 }}
+                variants={staggerVariants}
+              >
+                <motion.div
+                  className="stat-card text-center"
+                  variants={sectionVariants}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -276,8 +340,11 @@ export default function App() {
                   <div className="text-xs text-muted-foreground mt-1">
                     Years of Experience
                   </div>
-                </div>
-                <div className="text-center">
+                </motion.div>
+                <motion.div
+                  className="stat-card text-center"
+                  variants={sectionVariants}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -300,8 +367,11 @@ export default function App() {
                   <div className="text-xs text-muted-foreground mt-1">
                     Happy Customers
                   </div>
-                </div>
-                <div className="text-center">
+                </motion.div>
+                <motion.div
+                  className="stat-card text-center"
+                  variants={sectionVariants}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -324,8 +394,11 @@ export default function App() {
                   <div className="text-xs text-muted-foreground mt-1">
                     Vehicles Sold
                   </div>
-                </div>
-                <div className="text-center">
+                </motion.div>
+                <motion.div
+                  className="stat-card text-center"
+                  variants={sectionVariants}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -345,22 +418,41 @@ export default function App() {
                   <div className="text-xs text-muted-foreground mt-1">
                     Support Assistance
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                </motion.div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </section>
-        <section id="vehicles" className="py-14 md:py-20 bg-secondary/40">
+        <section id="vehicles" className="vehicles-section py-14 md:py-20 bg-secondary/40">
           <div className="mx-auto max-w-7xl px-4">
             <div className="flex items-center justify-center gap-4 mb-10">
               <span className="h-px flex-1 max-w-[120px] bg-border"></span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-wide text-center">
+              <h2 className="section-heading text-2xl md:text-3xl font-bold tracking-wide text-center">
                 OUR <span className="text-primary">VEHICLES</span>
               </h2>
               <span className="h-px flex-1 max-w-[120px] bg-border"></span>
             </div>
-            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <div className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+            <motion.div
+              className="vehicles-grid grid md:grid-cols-2 xl:grid-cols-4 gap-6"
+              initial={shouldReduceMotion ? false : "hidden"}
+              whileInView={shouldReduceMotion ? undefined : "show"}
+              viewport={{ once: true, amount: 0.2 }}
+              variants={{
+                hidden: {},
+                show: {
+                  transition: {
+                    staggerChildren: 0.08,
+                  },
+                },
+              }}
+            >
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
                 <div className="aspect-[4/3] bg-muted">
                   <img
                     src="/assets/JM2.png"
@@ -469,9 +561,15 @@ export default function App() {
                     </svg>
                   </a>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
                 <div className="aspect-[4/3] bg-muted">
                   <img
                     src="/assets/JM 10.avif"
@@ -580,9 +678,15 @@ export default function App() {
                     </svg>
                   </a>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
                 <div className="aspect-[4/3] bg-muted">
                   <img
                     src="/assets/JM5.jpg"
@@ -691,8 +795,14 @@ export default function App() {
                     </svg>
                   </a>
                 </div>
-              </div>
-              <div className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col">
+              </motion.div>
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
                 <div className="aspect-[4/3] bg-muted">
                   <img
                     src="/assets/JM4.png"
@@ -801,17 +911,244 @@ export default function App() {
                     </svg>
                   </a>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
+                <div className="aspect-[4/3] bg-muted">
+                  <img
+                    src={encodeURI("/assets/Atul Gem Paxx CNG 3 Wheeler.jpeg")}
+                    alt="ATUL GEM PAXX CNG 3 WHEELER"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-center font-bold tracking-wide mb-4">
+                    ATUL GEM PAXX CNG 3 WHEELER
+                  </h3>
+                  <ul className="space-y-2 mb-5 flex-1">
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>CNG Efficiency</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Comfortable Ride</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Low Maintenance</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>City Friendly</span>
+                    </li>
+                  </ul>
+                  <a href="#contact" className="inline-flex justify-center items-center gap-2 rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground hover:opacity-90">
+                    ENQUIRE NOW{" "}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right h-4 w-4" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
+                <div className="aspect-[4/3] bg-muted">
+                  <img
+                    src={encodeURI("/assets/Atul Rik +.png")}
+                    alt="ATUL RIK+"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-center font-bold tracking-wide mb-4">
+                    ATUL RIK+
+                  </h3>
+                  <ul className="space-y-2 mb-5 flex-1">
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Spacious Cabin</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Reliable Performance</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Fuel Efficient</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>City Friendly</span>
+                    </li>
+                  </ul>
+                  <a href="#contact" className="inline-flex justify-center items-center gap-2 rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground hover:opacity-90">
+                    ENQUIRE NOW{" "}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right h-4 w-4" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
+                <div className="aspect-[4/3] bg-muted">
+                  <img
+                    src={encodeURI("/assets/Atul Shakti Diesel Waferbody.png")}
+                    alt="ATUL SHAKTI DIESEL WAFERBODY"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-center font-bold tracking-wide mb-4">
+                    ATUL SHAKTI DIESEL WAFERBODY
+                  </h3>
+                  <ul className="space-y-2 mb-5 flex-1">
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Strong Load Body</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Diesel Power</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Durable Build</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Business Ready</span>
+                    </li>
+                  </ul>
+                  <a href="#contact" className="inline-flex justify-center items-center gap-2 rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground hover:opacity-90">
+                    ENQUIRE NOW{" "}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right h-4 w-4" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="bg-card rounded-lg shadow-sm border overflow-hidden flex flex-col"
+                variants={{
+                  hidden: { opacity: 0, y: 30 },
+                  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+                }}
+              >
+                <div className="aspect-[4/3] bg-muted">
+                  <img
+                    src={encodeURI("/assets/Auto Gem Cargo Aqua CNG Specification.png")}
+                    alt="AUTO GEM CARGO AQUA CNG"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5 flex-1 flex flex-col">
+                  <h3 className="text-center font-bold tracking-wide mb-4">
+                    AUTO GEM CARGO AQUA CNG
+                  </h3>
+                  <ul className="space-y-2 mb-5 flex-1">
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Cargo-Friendly Bed</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>CNG Efficiency</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Smooth Handling</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-check h-4 w-4 text-primary shrink-0" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                      <span>Low Running Cost</span>
+                    </li>
+                  </ul>
+                  <a href="#contact" className="inline-flex justify-center items-center gap-2 rounded-md bg-primary py-3 text-sm font-bold text-primary-foreground hover:opacity-90">
+                    ENQUIRE NOW{" "}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right h-4 w-4" aria-hidden="true">
+                      <path d="M5 12h14" />
+                      <path d="m12 5 7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
         <section className="py-14 md:py-20 bg-brand-blue text-white">
           <div className="mx-auto max-w-7xl px-4">
-            <h2 className="text-center text-2xl md:text-3xl font-black mb-12">
+            <h2 className="section-heading text-center text-2xl md:text-3xl font-black mb-12">
               WHY <span className="text-brand-gold">CHOOSE US?</span>
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-5 justify-items-center gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-12">
-              <div className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1">
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-5 justify-items-center gap-x-6 gap-y-10 md:gap-x-8 md:gap-y-12"
+              initial={shouldReduceMotion ? false : "hidden"}
+              whileInView={shouldReduceMotion ? undefined : "show"}
+              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerVariants}
+            >
+              <motion.div
+                className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1"
+                variants={sectionVariants}
+                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -829,9 +1166,14 @@ export default function App() {
                   <circle cx="12" cy="8" r="6" />
                 </svg>
                 <div className="text-sm font-semibold">Genuine Vehicles</div>
-              </div>
+              </motion.div>
 
-              <div className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1">
+              <motion.div
+                className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1"
+                variants={sectionVariants}
+                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -848,8 +1190,13 @@ export default function App() {
                   <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />
                 </svg>
                 <div className="text-sm font-semibold">Service Support</div>
-              </div>
-              <div className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1">
+              </motion.div>
+              <motion.div
+                className="flex flex-col items-center text-center gap-3 md:col-span-2 lg:col-span-1"
+                variants={sectionVariants}
+                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -867,8 +1214,13 @@ export default function App() {
                   <circle cx="12" cy="12" r="3" />
                 </svg>
                 <div className="text-sm font-semibold">Genuine Spare Parts</div>
-              </div>
-              <div className="flex flex-col items-center text-center gap-3 md:col-span-2 md:col-start-2 lg:col-span-1 lg:col-start-auto">
+              </motion.div>
+              <motion.div
+                className="flex flex-col items-center text-center gap-3 md:col-span-2 md:col-start-2 lg:col-span-1 lg:col-start-auto"
+                variants={sectionVariants}
+                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -886,8 +1238,13 @@ export default function App() {
                   <path d="m9 12 2 2 4-4" />
                 </svg>
                 <div className="text-sm font-semibold">Trusted Dealer</div>
-              </div>
-              <div className="flex flex-col items-center text-center gap-3 md:col-span-2 md:col-start-4 lg:col-span-1 lg:col-start-auto">
+              </motion.div>
+              <motion.div
+                className="flex flex-col items-center text-center gap-3 md:col-span-2 md:col-start-4 lg:col-span-1 lg:col-start-auto"
+                variants={sectionVariants}
+                whileHover={shouldReduceMotion ? undefined : { y: -4, scale: 1.02 }}
+                transition={{ duration: 0.25 }}
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -906,15 +1263,21 @@ export default function App() {
                 <div className="text-sm font-semibold">
                   Quick Customer Support
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
-        <section id="services" className="py-8 md:py-12">
+        <section id="services" className="service-section py-8 md:py-12">
           <div className="mx-auto max-w-7xl px-4">
-            <div className="bg-secondary/60 rounded-lg p-6 md:p-8 grid grid-cols-[1fr_auto] gap-4 items-center">
+            <motion.div
+              className="bg-secondary/60 rounded-lg p-6 md:p-8 grid grid-cols-[1fr_auto] gap-4 items-center"
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+              whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
               <div className="text-center">
-                <h3 className="text-2xl md:text-4xl font-black text-primary mb-4">
+                <h3 className="section-heading text-2xl md:text-4xl font-black text-primary mb-4">
                   SERVICE &amp; SPARE{" "}
                   <span className="text-foreground">PARTS</span>
                 </h3>
@@ -994,12 +1357,16 @@ export default function App() {
                 </ul>
 
               </div>
-              <img
+              <motion.img
                 src="/assets/JM5.jpg"
                 alt=""
                 className="w-56 sm:w-72 md:w-96 h-auto rounded object-cover"
+                initial={shouldReduceMotion ? false : { opacity: 0, x: 18 }}
+                whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
               />
-            </div>
+            </motion.div>
           </div>
         </section>
         <section className="py-8 md:py-12 bg-secondary/40">
@@ -1011,8 +1378,17 @@ export default function App() {
               </h2>
               <span className="h-px flex-1 max-w-[120px] bg-border"></span>
             </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="bg-card border rounded-lg p-6 shadow-sm">
+            <motion.div
+              className="testimonial-grid grid md:grid-cols-3 gap-6"
+              initial={shouldReduceMotion ? false : "hidden"}
+              whileInView={shouldReduceMotion ? undefined : "show"}
+              viewport={{ once: true, amount: 0.25 }}
+              variants={staggerVariants}
+            >
+              <motion.div
+                className="testimonial-card bg-card border rounded-lg p-6 shadow-sm"
+                variants={sectionVariants}
+              >
                 <div className="flex gap-0.5 mb-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1102,8 +1478,11 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="bg-card border rounded-lg p-6 shadow-sm">
+              </motion.div>
+              <motion.div
+                className="testimonial-card bg-card border rounded-lg p-6 shadow-sm"
+                variants={sectionVariants}
+              >
                 <div className="flex gap-0.5 mb-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1193,8 +1572,11 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="bg-card border rounded-lg p-6 shadow-sm">
+              </motion.div>
+              <motion.div
+                className="testimonial-card bg-card border rounded-lg p-6 shadow-sm"
+                variants={sectionVariants}
+              >
                 <div className="flex gap-0.5 mb-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -1284,21 +1666,31 @@ export default function App() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
-        <section id="gallery" className="py-14 md:py-20">
+        <section id="gallery" className="relative overflow-hidden py-14 md:py-20">
+          <motion.div
+            className="pointer-events-none absolute -right-24 top-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl"
+            style={shouldReduceMotion ? undefined : { y: galleryGlowY }}
+          />
           <div className="mx-auto max-w-7xl px-4">
             <div className="flex items-center justify-center gap-4 mb-10">
               <span className="h-px flex-1 max-w-[120px] bg-border"></span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-wide text-center">
+              <h2 className="section-heading text-2xl md:text-3xl font-bold tracking-wide text-center">
                 <span className="text-primary">GALLERY</span>
               </h2>
               <span className="h-px flex-1 max-w-[120px] bg-border"></span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="group">
+            <motion.div
+              className="gallery-grid grid grid-cols-2 md:grid-cols-5 gap-4"
+              initial={shouldReduceMotion ? false : "hidden"}
+              whileInView={shouldReduceMotion ? undefined : "show"}
+              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerVariants}
+            >
+              <motion.div className="gallery-tile group" variants={sectionVariants}>
                 <div className="aspect-[4/3] overflow-hidden rounded bg-muted">
                   <img
                     src="/assets/JM7.jpg"
@@ -1309,8 +1701,8 @@ export default function App() {
                 <div className="text-center text-xs mt-2 font-medium">
                   Anand Showroom
                 </div>
-              </div>
-              <div className="group">
+              </motion.div>
+              <motion.div className="gallery-tile group" variants={sectionVariants}>
                 <div className="aspect-[4/3] overflow-hidden rounded bg-muted">
                   <img
                     src="/assets/JM13.jpg"
@@ -1321,8 +1713,8 @@ export default function App() {
                 <div className="text-center text-xs mt-2 font-medium">
                   Vehicle Delivery
                 </div>
-              </div>
-              <div className="group">
+              </motion.div>
+              <motion.div className="gallery-tile group" variants={sectionVariants}>
                 <div className="aspect-[4/3] overflow-hidden rounded bg-muted">
                   <img
                     src="/assets/JM9.png"
@@ -1333,8 +1725,8 @@ export default function App() {
                 <div className="text-center text-xs mt-2 font-medium">
                   Happy Customer
                 </div>
-              </div>
-              <div className="group">
+              </motion.div>
+              <motion.div className="gallery-tile group" variants={sectionVariants}>
                 <div className="aspect-[4/3] overflow-hidden rounded bg-muted">
                   <img
                     src="/assets/JM12.jpg"
@@ -1345,8 +1737,8 @@ export default function App() {
                 <div className="text-center text-xs mt-2 font-medium">
                   Kheda Showroom
                 </div>
-              </div>
-              <div className="group">
+              </motion.div>
+              <motion.div className="gallery-tile group" variants={sectionVariants}>
                 <div className="aspect-[4/3] overflow-hidden rounded bg-muted">
                   <img
                     src="/assets/JM11.jpg"
@@ -1357,22 +1749,32 @@ export default function App() {
                 <div className="text-center text-xs mt-2 font-medium">
                   Atul Dealership
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
         <section
           id="contact"
-          className="bg-brand-blue text-white py-14 md:py-20"
+          className="relative overflow-hidden bg-brand-blue text-white py-14 md:py-20"
         >
-          <div className="mx-auto max-w-7xl px-4 grid md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-xl font-black text-brand-gold mb-5">
+          <motion.div
+            className="pointer-events-none absolute left-0 bottom-0 h-80 w-80 rounded-full bg-brand-gold/10 blur-3xl"
+            style={shouldReduceMotion ? undefined : { y: contactGlowY }}
+          />
+          <motion.div
+            className="mx-auto max-w-7xl px-4 grid md:grid-cols-3 gap-8"
+            initial={shouldReduceMotion ? false : "hidden"}
+            whileInView={shouldReduceMotion ? undefined : "show"}
+            viewport={{ once: true, amount: 0.2 }}
+            variants={staggerVariants}
+          >
+            <motion.div className="contact-panel" variants={sectionVariants}>
+              <h3 className="section-heading text-xl font-black text-brand-gold mb-5">
                 CONTACT US
               </h3>
               <ul className="space-y-3 text-sm">
                 <li className="font-bold text-lg">
-                  Anand Dealer
+                  Anand Dealership
                 </li>
                 <li className="flex gap-3">
                   <svg
@@ -1431,7 +1833,7 @@ export default function App() {
                   jainammotors@gmail.com
                 </li>
                 <li className="font-bold text-lg">
-                  Kheda Dealer
+                  Kheda Dealership
                 </li>
                 <li className="flex gap-3">
                   <svg
@@ -1487,7 +1889,7 @@ export default function App() {
                     <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7" />
                     <rect x="2" y="4" width="20" height="16" rx="2" />
                   </svg>{" "}
-                  jainammotors87@gmail.com
+                  jainammotorsnadiad@gmail.com
                 </li>
                 <li className="flex gap-3">
                   <svg
@@ -1509,15 +1911,15 @@ export default function App() {
                   Mon - Sat: 10:00 AM - 7:00 PM
                 </li>
               </ul>
-            </div>
-            <div className="rounded overflow-hidden bg-white min-h-[280px]">
+            </motion.div>
+            <motion.div className="contact-panel rounded overflow-hidden bg-white min-h-[280px]" variants={sectionVariants}>
               <iframe
                 title="map"
                 src="https://www.google.com/maps?q=22.5620972,72.9849277&z=17&output=embed"
                 className="w-full h-full min-h-[280px]"
               ></iframe>
-            </div>
-            <div>
+            </motion.div>
+            <motion.div className="contact-panel" variants={sectionVariants}>
               <h3 className="text-xl font-black text-brand-gold mb-3">
                 GET IN TOUCH
               </h3>
@@ -1527,7 +1929,7 @@ export default function App() {
               <div className="flex flex-col gap-3">
                 <a
                   href="https://wa.me/919574005036"
-                  className="inline-flex items-center justify-center gap-2 rounded-md bg-[#25D366] py-3 font-bold hover:opacity-90"
+                  className="lift-button inline-flex items-center justify-center gap-2 rounded-md bg-[#25D366] py-3 font-bold hover:opacity-90"
                 >
                   WHATSAPP US{" "}
                   <svg
@@ -1568,8 +1970,8 @@ export default function App() {
                   </svg>
                 </a>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
         <footer className="bg-brand-dark text-white/80">
           <div className="mx-auto max-w-7xl px-4 py-10 grid md:grid-cols-4 gap-8">
