@@ -1,5 +1,218 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+
+const WEB3FORMS_ACCESS_KEY = "c2764b13-d259-47f6-8b0a-4fdb5403204d";
+
+function ContactEnquiryForm() {
+  const [formState, setFormState] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+    message: "",
+    consentUpdates: false,
+    consentTerms: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState({ type: "", message: "" });
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setFormState((current) => ({ ...current, [name]: type === "checkbox" ? checked : value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback({ type: "", message: "" });
+
+    try {
+      const formData = new FormData();
+      formData.append("access_key", WEB3FORMS_ACCESS_KEY);
+      formData.append("name", formState.name.trim());
+      formData.append("mobile", formState.mobile.trim());
+      formData.append("email", formState.email.trim());
+      formData.append("message", formState.message.trim());
+      formData.append("consent_updates", formState.consentUpdates ? "Yes" : "No");
+      formData.append("consent_terms", formState.consentTerms ? "Yes" : "No");
+      formData.append("subject", "New enquiry from Jainam Motors website");
+      formData.append("from_name", "Jainam Motors Website");
+
+      const response = await fetch("https://" + "api.web3forms.com" + "/submit", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "We couldn’t submit your enquiry right now. Please try again."
+        );
+      }
+
+      setFeedback({
+        type: "success",
+        message:
+          "Thanks! Your enquiry has been submitted successfully. Our team will get back to you soon.",
+      });
+      setFormState({
+        name: "",
+        mobile: "",
+        email: "",
+        message: "",
+        consentUpdates: false,
+        consentTerms: false,
+      });
+    } catch (error) {
+      setFeedback({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong while submitting your enquiry. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+      <div>
+        <h3 className="section-heading text-xl font-black text-brand-gold mb-3">
+          SEND AN ENQUIRY
+        </h3>
+        <p className="text-sm text-white/85">
+          Share your details and our team will connect with you shortly.
+        </p>
+      </div>
+      <div className="grid gap-4">
+        <div>
+          <label htmlFor="name" className="mb-2 block text-sm font-semibold">
+            Full Name <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            value={formState.name}
+            onChange={handleChange}
+            className="w-full rounded-md border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/55 outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30"
+            placeholder="Enter your full name"
+          />
+        </div>
+        <div>
+          <label htmlFor="mobile" className="mb-2 block text-sm font-semibold">
+            Mobile Number <span aria-hidden="true">*</span>
+          </label>
+          <input
+            id="mobile"
+            name="mobile"
+            type="tel"
+            required
+            inputMode="tel"
+            value={formState.mobile}
+            onChange={handleChange}
+            className="w-full rounded-md border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/55 outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30"
+            placeholder="Enter mobile number"
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="mb-2 block text-sm font-semibold">
+            Email Address <span className="text-white/60">(optional)</span>
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={formState.email}
+            onChange={handleChange}
+            className="w-full rounded-md border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/55 outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30"
+            placeholder="Enter email address"
+          />
+        </div>
+        <div>
+          <label htmlFor="message" className="mb-2 block text-sm font-semibold">
+            Message <span className="text-white/60">(optional)</span>
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            rows="4"
+            value={formState.message}
+            onChange={handleChange}
+            className="w-full rounded-md border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/55 outline-none transition focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30"
+            placeholder="Tell us what you’re looking for"
+          />
+        </div>
+      </div>
+      <div className="space-y-3 rounded-lg border border-white/10 bg-white/5 p-4 text-sm">
+        <label className="flex items-start gap-3 leading-relaxed">
+          <input
+            type="checkbox"
+            name="consentTerms"
+            checked={formState.consentTerms}
+            onChange={handleChange}
+            required
+            className="mt-1 h-4 w-4 rounded border-white/40 bg-transparent text-brand-gold focus:ring-brand-gold"
+          />
+          <span>
+            I agree to the{" "}
+            <Link to="/terms-and-conditions" className="font-semibold text-brand-gold underline-offset-4 hover:underline">
+              Terms &amp; Conditions
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy-policy" className="font-semibold text-brand-gold underline-offset-4 hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </span>
+        </label>
+        <label className="flex items-start gap-3 leading-relaxed">
+          <input
+            type="checkbox"
+            name="consentUpdates"
+            checked={formState.consentUpdates}
+            onChange={handleChange}
+            className="mt-1 h-4 w-4 rounded border-white/40 bg-transparent text-brand-gold focus:ring-brand-gold"
+          />
+          <span>
+            I would like to receive communications from Jainam Motors via SMS, RCS,
+            Email and WhatsApp regarding enquiries, updates and promotional offers.
+          </span>
+        </label>
+      </div>
+      {feedback.message ? (
+        <div
+          className={
+            feedback.type === "success"
+              ? "rounded-md border px-4 py-3 text-sm border-emerald-400/30 bg-emerald-400/10 text-emerald-50"
+              : "rounded-md border px-4 py-3 text-sm border-rose-400/30 bg-rose-400/10 text-rose-50"
+          }
+          aria-live="polite"
+        >
+          {feedback.message}
+        </div>
+      ) : null}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="lift-button inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-gold px-5 py-3 font-bold text-brand-blue transition disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {isSubmitting ? "Submitting..." : "Submit Enquiry"}
+      </button>
+    </form>
+  );
+}
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -1920,56 +2133,7 @@ export default function App() {
               ></iframe>
             </motion.div>
             <motion.div className="contact-panel" variants={sectionVariants}>
-              <h3 className="text-xl font-black text-brand-gold mb-3">
-                GET IN TOUCH
-              </h3>
-              <p className="text-sm mb-5">
-                Have any questions? We are here to help you.
-              </p>
-              <div className="flex flex-col gap-3">
-                <a
-                  href="https://wa.me/919574005036"
-                  className="lift-button inline-flex items-center justify-center gap-2 rounded-md bg-[#25D366] py-3 font-bold hover:opacity-90"
-                >
-                  WHATSAPP US{" "}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-message-circle h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" />
-                  </svg>
-                </a>
-                <a
-                  href="tel:+919574005036"
-                  className="inline-flex items-center justify-center gap-2 rounded-md bg-primary py-3 font-bold hover:opacity-90"
-                >
-                  CALL NOW{" "}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-phone h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />
-                  </svg>
-                </a>
-              </div>
+              <ContactEnquiryForm />
             </motion.div>
           </motion.div>
         </section>
@@ -2022,6 +2186,16 @@ export default function App() {
                   <a href="#" className="hover:text-white">
                     Contact Us
                   </a>
+                </li>
+                <li>
+                  <Link to="/privacy-policy" className="hover:text-white">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms-and-conditions" className="hover:text-white">
+                    Terms &amp; Conditions
+                  </Link>
                 </li>
               </ul>
             </div>
